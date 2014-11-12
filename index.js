@@ -9,7 +9,6 @@ var path = require('path');
 var mkdirp = require("mkdirp");
 var gs = require('glob-stream');
 var globule = require('globule');
-var dict = require("dict");
 var jsdom = require("jsdom");
 var $ =  require('jquery');
 var async = require('async');

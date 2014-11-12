@@ -1,23 +1,27 @@
 {
-  "name": "gulp-page-sprite",
-  "version": "1.0.0",
-  "description": "Generate sprite by page",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "gulp-util": "^3.0.1",
-    "gulp.spritesmith": "^1.4.0",
-    "through2": "^0.6.3"
-  },
-  "dependencies": {
-    "glob-stream": "^3.1.15",
-    "globule": "^0.2.0",
-    "jquery": "^2.1.1",
-    "jsdom": "^1.2.1",
-    "mkdirp": "^0.5.0"
-  }
+    "name": "gulp-page-sprite",
+    "version": "1.0.0",
+    "description": "Generate sprite by page",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:Fykec/gulp-page-sprite.git"
+    },
+    "license": "ISC",
+    "devDependencies": {
+        "gulp-util": "^3.0.1",
+        "gulp.spritesmith": "^1.4.0",
+        "through2": "^0.6.3"
+    },
+    "dependencies": {
+        "glob-stream": "^3.1.15",
+        "globule": "^0.2.0",
+        "jquery": "^2.1.1",
+        "jsdom": "^1.2.1",
+        "mkdirp": "^0.5.0"
+    }
 }

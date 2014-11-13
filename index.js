@@ -74,7 +74,7 @@ module.exports = function (options) {
                                 // first argument can be html string, filename, or url
                                 jsdom.env(imgEle, function (errors, window) {
                                     var $img = $(window);
-                                    $img('img').removeAttr('src', '')
+                                    $img('img').attr('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') //set empty image not remove http://stackoverflow.com/questions/9172895/remove-border-around-sprite-image-in-chrome
                                     var cssIndex = inArray(imgSrc, imageKeyArray)
                                     $img('img').addClass(imageCSSArray[cssIndex])
                                     newImgEle = $img('img')[0].outerHTML
@@ -105,8 +105,8 @@ module.exports = function (options) {
                     var globStream = gs.create(glob, opts);
                     var spriteData = globStream.pipe(spritesmith({
                         algorithm:'binary-tree',
-                        imgName:  fileName + '.sprite.png',
-                        cssName: 'sprite.css',
+                        imgName: options.image_dist + fileName + '.sprite.png',
+                        cssName: options.css_dist + 'sprite.css',
                         cssVarMap: function (sprite) {
                             sprite.name = fileName.replace('.', '_') + '-' + sprite.name
                         }
@@ -118,14 +118,14 @@ module.exports = function (options) {
                         if (err) {return err;}
                         spriteData.img
                             .pipe(through.obj(function (fileStream) {
-                                fileStream.pipe(fs.createWriteStream(options.image_dist + fileStream.path))
+                                fileStream.pipe(fs.createWriteStream(fileStream.path))
                             }));
                     })
                     mkdirp(options.css_dist, function (err) {
                         if (err) {return err;}
                         spriteData.css
                             .pipe(through.obj(function (fileStream) {
-                                fileStream.pipe(fs.createWriteStream(options.css_dist + fileStream.path, {'flags': 'a'}))
+                                fileStream.pipe(fs.createWriteStream(fileStream.path, {'flags': 'a'}))
                             }));
                     })
                 }

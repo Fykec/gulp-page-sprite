@@ -4,6 +4,8 @@ var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var pkg = require('./package.json');
 var spritesmith = require('gulp.spritesmith');
+var csso = require('gulp-csso');
+var imagemin = require('gulp-imagemin');
 var fs = require('fs');
 var path = require('path');
 var mkdirp = require("mkdirp");
@@ -117,6 +119,7 @@ module.exports = function (options) {
 
                         if (err) {return err;}
                         spriteData.img
+                            .pipe(imagemin())
                             .pipe(through.obj(function (fileStream) {
                                 fileStream.pipe(fs.createWriteStream(fileStream.path))
                             }));
@@ -124,6 +127,7 @@ module.exports = function (options) {
                     mkdirp(options.css_dist, function (err) {
                         if (err) {return err;}
                         spriteData.css
+                            .pipe(csso())
                             .pipe(through.obj(function (fileStream) {
                                 fileStream.pipe(fs.createWriteStream(fileStream.path, {'flags': 'a'}))
                             }));

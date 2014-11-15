@@ -105,9 +105,10 @@ module.exports = function (options) {
                     }
                     var glob = globule.find(imagePathArray)
                     var globStream = gs.create(glob, opts);
+                    var timestamp = new Date().getTime()
                     var spriteData = globStream.pipe(spritesmith({
                         algorithm:'binary-tree',
-                        imgName: options.image_dist + fileName + '.sprite.png',
+                        imgName: options.image_dist + fileName + '-' + timestamp+ '.sprite.png',
                         cssName: options.css_dist + 'sprite.css',
                         cssVarMap: function (sprite) {
                             sprite.name = fileName.replace('.', '_') + '-' + sprite.name

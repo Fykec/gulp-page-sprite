@@ -43,7 +43,7 @@ module.exports = function (options) {
 	if (file.isBuffer()) {
             var fileName = path.basename(file.path, '.html')
 	    var contents = file.contents.toString()
-	    var matched = contents.match(/<\s*img.*src=\"\/static\/images\/.*(\/)?>/g)
+	    var matched = contents.match(/<\s*img.*src=\"\/static\/images\/[^<]*>/g)
 
 	    if (matched) {
 		matched.forEach(function (element, index, array) {
@@ -67,7 +67,7 @@ module.exports = function (options) {
 
                     async.map(lines, function (line, callback) {
                         if (line.indexOf('img')) {
-                            var thematched = line.match(/<\s*img.*src=\"(\/static\/images\/.*?png)\".*(\/)?>/i)
+                            var thematched = line.match(/<\s*img.*src=\"(\/static\/images\/.*?png)\"[^<]*>/i)
                             if (thematched && fs.existsSync(options.image_src + thematched[1])) {
                                 var imgEle = thematched[0]
                                 var imgSrc = thematched[1]

@@ -14,6 +14,11 @@ var globule = require('globule');
 var jsdom = require("jsdom");
 var $ =  require('jquery');
 var async = require('async');
+var crypto = require('crypto');
+
+function md5(str) {
+    return crypto.createHash('md5').update(str).digest('hex');
+}
 
 
 
@@ -31,29 +36,29 @@ function inArray(elem,array)
 module.exports = function (options) {
     // creating a stream through which each file will pass
     var stream = through.obj(function(file, enc, cb) {
-	if (file.isNull()) {
-	    return cb(null, file)
-	}
-	
+        if (file.isNull()) {
+            return cb(null, file)
+        }
+
 
         var imagePathArray = []
         var imageKeyArray = []
         var imageCSSArray = []
 
-	if (file.isBuffer()) {
+        if (file.isBuffer()) {
             var fileName = path.basename(file.path, '.html')
-	    var contents = file.contents.toString()
-	    var matched = contents.match(/<\s*img.*src=\"\/static\/images\/[^<]*>/g)
+            var contents = file.contents.toString()
+            var matched = contents.match(/<\s*img.*src=\"\/static\/images\/[^<]*>/g)
 
-	    if (matched) {
-		matched.forEach(function (element, index, array) {
+            if (matched) {
+                matched.forEach(function (element, index, array) {
                     var pngImage = element.match(/src=\"(.*?png)\"/)
                     if (pngImage && -1 === inArray(options.image_src + pngImage[1], imagePathArray) && fs.existsSync(options.image_src + pngImage[1])) {
 
                         imagePathArray.push(options.image_src +  pngImage[1])
                         imageKeyArray.push(pngImage[1])
                     }
-		})
+                })
 
                 if (imagePathArray.length > 1) {
 
@@ -80,21 +85,21 @@ module.exports = function (options) {
                                     var cssIndex = inArray(imgSrc, imageKeyArray)
                                     $img('img').addClass(imageCSSArray[cssIndex])
                                     newImgEle = $img('img')[0].outerHTML
-	                            callback(null, lineParts.join(newImgEle))
-			
+                                    callback(null, lineParts.join(newImgEle))
+
                                 })
 
                             }
                             else {
                                 callback(null, line)
                             }
-	                } else {
+                        } else {
                             callback(null, line)
-	                }
+                        }
 
                     },function (err, results) {
-	                var newContent = results.join('\n')
-	                file.contents = new Buffer(newContent)
+                        var newContent = results.join('\n')
+                        file.contents = new Buffer(newContent)
                         cb(null, file)
                     })
 
@@ -105,15 +110,39 @@ module.exports = function (options) {
                     }
                     var glob = globule.find(imagePathArray)
                     var globStream = gs.create(glob, opts);
-                    var timestamp = new Date().getTime()
-                    var spriteData = globStream.pipe(spritesmith({
-                        algorithm:'binary-tree',
-                        imgName: options.image_dist + fileName + '-' + timestamp+ '.sprite.png',
-                        cssName: options.css_dist + 'sprite.css',
-                        cssVarMap: function (sprite) {
-                            sprite.name = fileName.replace('.', '_') + '-' + sprite.name
-                        }
-                    }))
+                    var imageNames = []
+                    var originName = fileName + '.sprite.png'
+                    var newName = 'testabc123'
+                    function getHashStamp() {
+                        return md5(imageNames.join(',')).slice(0, 8);
+                    }
+
+                    var spriteData = globStream
+                        .pipe(through.obj(function (file, enc, cb) {
+                            var _ = this
+                            fs.readFile(file.path, function (err, data) {
+                                if(err) {
+                                    return cb()
+                                }
+                                var hash = md5(data).slice(0, 8);
+                                var ext = path.extname(file.path);
+                                var imageName = path.basename(file.path, ext) + '-' + hash + ext;
+                                imageNames.push(imageName)
+                                _.push(file);
+                                cb();
+                            });
+                        }, function (cb) {
+                            newName = fileName + '-' + getHashStamp() + '.sprite.png'
+                            cb()
+                        }))
+                        .pipe(spritesmith({
+                            algorithm:'binary-tree',
+                            imgName: options.image_dist + fileName + '.sprite.png',
+                            cssName: options.css_dist + 'sprite.css',
+                            cssVarMap: function (sprite) {
+                                sprite.name = fileName.replace('.', '_') + '-' + sprite.name
+                            }
+                        }))
 
 
                     mkdirp(options.image_dist, function (err) {
@@ -122,30 +151,35 @@ module.exports = function (options) {
                         spriteData.img
                             .pipe(imagemin())
                             .pipe(through.obj(function (fileStream) {
-                                fileStream.pipe(fs.createWriteStream(fileStream.path))
+                                fileStream.pipe(fs.createWriteStream(fileStream.path.replace(originName, newName)))
                             }));
                     })
                     mkdirp(options.css_dist, function (err) {
                         if (err) {return err;}
                         spriteData.css
                             .pipe(csso())
+                            .pipe(through.obj(function (fileStream, cb) {
+                                fileStream.contents = new Buffer(fileStream.contents.toString().replace(new RegExp(originName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), newName))
+                                this.push(fileStream)
+                            }))
                             .pipe(through.obj(function (fileStream) {
-                                fileStream.pipe(fs.createWriteStream(fileStream.path, {'flags': 'a'}))
+                                fileStream
+                                    .pipe(fs.createWriteStream(fileStream.path, {'flags': 'a'}))
                             }));
                     })
                 }
                 else {
                     cb(null, file)
                 }
-	    }
+            }
             else {
                 cb(null, file)
             }
-	}
+        }
 
-	if (file.isStream()) {
-	    return cb(new PluginError(pkg.name, 'Streaming is not supported'))
-	}
+        if (file.isStream()) {
+            return cb(new PluginError(pkg.name, 'Streaming is not supported'))
+        }
     });
 
     // returning the file stream

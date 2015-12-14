@@ -112,7 +112,7 @@ module.exports = function (options) {
                     var globStream = gs.create(glob, opts);
                     var imageNames = []
                     var originName = fileName + '.sprite.png'
-                    var newName = 'testabc123'
+                    var newName
                     function getHashStamp() {
                         return md5(imageNames.join(',')).slice(0, 8);
                     }
@@ -139,6 +139,7 @@ module.exports = function (options) {
                             algorithm:'binary-tree',
                             imgName: options.image_dist + fileName + '.sprite.png',
                             cssName: options.css_dist + 'sprite.css',
+                            imgPath: options.image_path + fileName + '.sprite.png',
                             cssVarMap: function (sprite) {
                                 sprite.name = fileName.replace('.', '_') + '-' + sprite.name
                             }
